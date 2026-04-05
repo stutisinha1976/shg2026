@@ -1,0 +1,102 @@
+/* ═══════════════════════════════
+   LoanCalculator.css
+   ═══════════════════════════════ */
+
+.loan-card {
+  padding: var(--spacing-xl);
+}
+
+.loan-chart-container {
+  margin-bottom: var(--spacing-xl);
+}
+
+/* Tooltip */
+.loan-tooltip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-elevated);
+  min-width: 180px;
+}
+
+.loan-tooltip-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-size: 0.9rem;
+}
+
+.loan-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.loan-tooltip-row strong {
+  color: var(--text-primary);
+}
+
+/* Detail Cards */
+.loan-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.loan-detail-card {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-md);
+  transition: all var(--transition-base);
+}
+
+.loan-detail-card:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--border-accent);
+}
+
+.loan-detail-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.loan-detail-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.loan-detail-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.loan-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.loan-detail-label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.loan-detail-value {
+  display: block;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--accent-secondary);
+}

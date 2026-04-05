@@ -1,0 +1,15 @@
+/* LoanDefaultRisk.css */
+.risk-card { padding: var(--spacing-xl); }
+.risk-members { display: flex; flex-wrap: wrap; gap: var(--spacing-xl);
+  justify-content: center; }
+.risk-member { display: flex; flex-direction: column; align-items: center;
+  gap: var(--spacing-sm); flex: 1; min-width: 160px; max-width: 220px; }
+.risk-gauge-container { position: relative; width: 130px; height: 130px; }
+.risk-gauge-center { position: absolute; inset: 0; display: flex;
+  align-items: center; justify-content: center; }
+.risk-gauge-value { font-size: 1.4rem; font-weight: 800; }
+.risk-member-info { text-align: center; display: flex; flex-direction: column;
+  align-items: center; gap: var(--spacing-xs); }
+.risk-member-name { font-size: 0.9rem; font-weight: 600; color: var(--text-primary); }
+.risk-recommendation { font-size: 0.72rem; color: var(--text-muted);
+  max-width: 180px; line-height: 1.4; margin-top: 2px; }

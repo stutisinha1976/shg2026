@@ -1,0 +1,68 @@
+/* Auth.css — Scoped styles for auth pages */
+
+/* Keyframe animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scoped preflight for auth container — ensures form elements render properly
+   without the full Tailwind preflight that breaks existing vanilla CSS */
+.auth-page *,
+.auth-page *::before,
+.auth-page *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: transparent;
+}
+
+.auth-page button,
+.auth-page input {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-page button {
+  cursor: pointer;
+  background-color: transparent;
+  background-image: none;
+}
+
+.auth-page input::placeholder {
+  opacity: 1;
+}
+
+.auth-page h1, .auth-page h2, .auth-page h3, .auth-page p {
+  margin: 0;
+}
+
+.auth-page ul, .auth-page ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.auth-page img, .auth-page svg {
+  display: block;
+}
+
+.auth-page a {
+  color: inherit;
+  text-decoration: inherit;
+}

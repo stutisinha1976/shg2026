@@ -1,0 +1,21 @@
+/* GroupSummary.css */
+.group-summary {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+  position: relative;
+}
+.summary-stat { padding: var(--spacing-md); text-align: center; display: flex;
+  flex-direction: column; align-items: center; gap: var(--spacing-xs); }
+.summary-stat-icon { font-size: 1.5rem; }
+.summary-stat-value { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+.summary-stat-label { font-size: 0.7rem; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+.summary-meta { grid-column: 1 / -1; display: flex; gap: var(--spacing-sm);
+  justify-content: center; flex-wrap: wrap; }
+.meta-tag { padding: 0.25rem 0.7rem; background: var(--bg-glass);
+  border: 1px solid var(--border-subtle); border-radius: var(--radius-full);
+  font-size: 0.75rem; color: var(--text-muted); text-transform: capitalize; }
+@media (max-width: 900px) { .group-summary { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 600px) { .group-summary { grid-template-columns: repeat(2, 1fr); } }

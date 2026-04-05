@@ -1,0 +1,45 @@
+/* MemberDetails.css */
+.members-card { padding: var(--spacing-xl); }
+.members-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--spacing-lg); }
+.member-detail-card { background: var(--bg-glass); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md); padding: var(--spacing-lg);
+  transition: all var(--transition-base); }
+.member-detail-card:hover { border-color: var(--border-accent); box-shadow: var(--shadow-glow); }
+.member-detail-header { display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg); }
+.member-detail-header h4 { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; }
+
+/* Score Bars */
+.member-scores { display: flex; flex-direction: column; gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg); }
+.score-bar { }
+.score-bar-header { display: flex; justify-content: space-between; margin-bottom: 3px; }
+.score-bar-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.04em; font-weight: 500; }
+.score-bar-value { font-size: 0.75rem; font-weight: 700; }
+.score-bar-track { height: 6px; background: rgba(255,255,255,0.06);
+  border-radius: var(--radius-full); overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: var(--radius-full);
+  transition: width 1s cubic-bezier(0.4,0,0.2,1); }
+
+/* XAI */
+.xai-section { }
+.xai-reason { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;
+  margin-bottom: var(--spacing-md); padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--bg-glass); border-radius: var(--radius-sm);
+  border-left: 3px solid var(--accent-primary); }
+.xai-factors { display: flex; flex-direction: column; gap: 4px;
+  margin-bottom: var(--spacing-sm); }
+.xai-factor { font-size: 0.78rem; padding: 3px 0; }
+.xai-factor.positive { color: var(--green); }
+.xai-factor.negative { color: var(--red); }
+.xai-roadmap { margin-top: var(--spacing-md); padding: var(--spacing-md);
+  background: rgba(99,102,241,0.06); border-radius: var(--radius-sm);
+  border: 1px solid rgba(99,102,241,0.12); }
+.xai-roadmap-title { font-size: 0.8rem; font-weight: 600; color: var(--accent-secondary);
+  display: block; margin-bottom: var(--spacing-sm); }
+.xai-roadmap-item { font-size: 0.8rem; color: var(--text-secondary); padding: 2px 0;
+  line-height: 1.5; }
+
+@media (max-width: 768px) { .members-grid { grid-template-columns: 1fr; } }
