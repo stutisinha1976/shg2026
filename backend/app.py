@@ -294,8 +294,16 @@ def analyze():
         if user_id and image_url:
             from database import AnalysisResult, AnalysisOperations
             analysis = AnalysisResult(user_id, image_url, results)
+            # Save AnalysisResult
             analysis_id = AnalysisOperations.save_analysis(analysis)
             results["analysis_id"] = analysis_id
+            
+            # Auto-create ChatHistory so the uploaded ledger populates the chat sidebar natively!
+            from database import ChatHistory, ChatOperations
+            chat_msg = "Uploaded a ledger for analysis"
+            chat_resp = f"Ledger analysis complete! Found {results.get('total_members', 0)} members and {results.get('total_transactions', 0)} transactions. You can ask me follow-up questions about this active ledger."
+            chat_history = ChatHistory(user_id, chat_msg, chat_resp, context=results)
+            ChatOperations.save_chat(chat_history)
 
         return jsonify({"success": True, "results": results})
         
@@ -369,7 +377,7 @@ def chat():
         # Save chat history if user is authenticated
         if user_id:
             from database import ChatHistory, ChatOperations
-            chat = ChatHistory(user_id, message, reply, language)
+            chat = ChatHistory(user_id, message, reply, language, context=context)
             ChatOperations.save_chat(chat)
 
         return jsonify({"success": True, "reply": reply})
@@ -396,6 +404,7 @@ def get_chat_history():
                 "message": chat.message,
                 "response": chat.response,
                 "language": chat.language,
+                "context": chat.context,
                 "timestamp": chat.timestamp.isoformat()
             })
         

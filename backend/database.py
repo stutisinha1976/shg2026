@@ -95,11 +95,12 @@ class User:
 class ChatHistory:
     """Chat history model for storing user conversations"""
     
-    def __init__(self, user_id: str, message: str, response: str, language: str = "english"):
+    def __init__(self, user_id: str, message: str, response: str, language: str = "english", context: Dict = None):
         self.user_id = user_id
         self.message = message
         self.response = response
         self.language = language
+        self.context = context
         self.timestamp = datetime.now(timezone.utc)
     
     def to_dict(self) -> Dict:
@@ -109,6 +110,7 @@ class ChatHistory:
             "message": self.message,
             "response": self.response,
             "language": self.language,
+            "context": self.context,
             "timestamp": self.timestamp
         }
     
@@ -119,7 +121,8 @@ class ChatHistory:
             data["user_id"],
             data["message"],
             data["response"],
-            data.get("language", "english")
+            data.get("language", "english"),
+            data.get("context", None)
         )
         chat.timestamp = data["timestamp"]
         chat._id = data["_id"]  # Store ObjectId

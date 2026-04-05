@@ -66,12 +66,14 @@ export default function Chatbot({ context, activeChatData, onClose, token }) {
         headers['Authorization'] = `Bearer ${token}`
       }
 
+      const currentContext = activeChatData?.context || context || null;
+
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
           message: text.trim(),
-          context: context || null,
+          context: currentContext,
         }),
       })
 
