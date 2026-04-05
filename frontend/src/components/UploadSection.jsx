@@ -1,4 +1,6 @@
 import { useState, useRef } from 'react'
+import { Upload, AlertTriangle, Search, X, Image } from 'lucide-react'
+
 import './UploadSection.css'
 
 export default function UploadSection({ onUpload, error }) {
@@ -55,7 +57,7 @@ export default function UploadSection({ onUpload, error }) {
     <section className="upload-section" id="upload-section">
       <div className="upload-container">
         <h2 className="section-title">
-          <span className="icon">📤</span>
+          <span className="icon"><Upload size={18} className='inline-block mr-1' /></span>
           Upload Ledger Image
         </h2>
 
@@ -76,12 +78,12 @@ export default function UploadSection({ onUpload, error }) {
                 </span>
               </div>
               <button className="preview-remove" onClick={(e) => { e.stopPropagation(); handleRemove(); }}>
-                ✕
+                <X size={18} className='inline-block mr-1' />
               </button>
             </div>
           ) : (
             <div className="dropzone-content">
-              <div className="dropzone-icon">🖼️</div>
+              <div className="dropzone-icon"><Image size={18} className='inline-block mr-1' /></div>
               <p className="dropzone-text">
                 Drag & drop your ledger image here
               </p>
@@ -102,7 +104,7 @@ export default function UploadSection({ onUpload, error }) {
 
         {error && (
           <div className="upload-error">
-            <span>⚠️</span> {error}
+            <span><AlertTriangle size={18} className='inline-block mr-1' /></span> {error}
           </div>
         )}
 
@@ -111,7 +113,7 @@ export default function UploadSection({ onUpload, error }) {
           onClick={handleSubmit}
           disabled={!file}
         >
-          <span>🔍 Analyze Ledger</span>
+          <span><Search size={18} className='inline-block mr-1' /> Analyze Ledger</span>
         </button>
 
         <div className="upload-samples">

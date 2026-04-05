@@ -1,3 +1,4 @@
+import { Download, BarChart2 } from 'lucide-react'
 import GroupSummary from './GroupSummary'
 import FraudDetection from './FraudDetection'
 import CreditForecast from './CreditForecast'
@@ -38,11 +39,11 @@ export default function ResultsDashboard({ results }) {
     <div className="dashboard animate-fade-in-up">
       <div className="dashboard-header">
         <h2 className="dashboard-title">
-          <span className="icon">📊</span>
+          <span className="icon"><BarChart2 size={18} className='inline-block mr-1' /></span>
           SHG APEX v3.1 Analysis Results
         </h2>
         <button className="pdf-btn" onClick={handleDownloadPDF}>
-          <span>📥</span> Download PDF Report
+          <span><Download size={18} className='inline-block mr-1' /></span> Download PDF Report
         </button>
       </div>
 

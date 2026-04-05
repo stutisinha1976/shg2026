@@ -1,3 +1,4 @@
+import { BarChart2, IndianRupee, TrendingUp } from 'lucide-react'
 import './Hero.css'
 
 export default function Hero() {
@@ -44,10 +45,10 @@ export default function Hero() {
       </div>
 
       {/* Decorative floating elements */}
-      <div className="hero-float hero-float-1">📊</div>
+      <div className="hero-float hero-float-1"><BarChart2 size={18} className='inline-block mr-1' /></div>
       <div className="hero-float hero-float-2">🏦</div>
-      <div className="hero-float hero-float-3">📈</div>
-      <div className="hero-float hero-float-4">💰</div>
+      <div className="hero-float hero-float-3"><TrendingUp size={18} className='inline-block mr-1' /></div>
+      <div className="hero-float hero-float-4"><IndianRupee size={18} className='inline-block mr-1' /></div>
     </section>
   )
 }

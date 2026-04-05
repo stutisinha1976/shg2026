@@ -1,3 +1,4 @@
+import { Brain, Lightbulb } from 'lucide-react'
 import './MemberDetails.css'
 
 const SCORE_COLORS = {
@@ -25,7 +26,7 @@ export default function MemberDetails({ memberAnalysis }) {
 
   return (
     <div className="members-card glass-card">
-      <h3 className="section-title"><span className="icon">🧠</span>AI Explainability (XAI) & Member Scores</h3>
+      <h3 className="section-title"><span className="icon"><Brain size={18} className='inline-block mr-1' /></span>AI Explainability (XAI) & Member Scores</h3>
       <div className="members-grid">
         {members.map(([name, data]) => {
           const xai = data.xai_report || {}
@@ -67,7 +68,7 @@ export default function MemberDetails({ memberAnalysis }) {
 
                 {xai.improvement_roadmap?.length > 0 && (
                   <div className="xai-roadmap">
-                    <span className="xai-roadmap-title">💡 Improvement Roadmap</span>
+                    <span className="xai-roadmap-title"><Lightbulb size={18} className='inline-block mr-1' /> Improvement Roadmap</span>
                     {xai.improvement_roadmap.map((tip, i) => (
                       <div key={i} className="xai-roadmap-item">→ {tip}</div>
                     ))}

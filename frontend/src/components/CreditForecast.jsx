@@ -1,3 +1,4 @@
+import { TrendingUp } from 'lucide-react'
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, Area, AreaChart
@@ -42,7 +43,7 @@ export default function CreditForecast({ memberAnalysis }) {
 
   return (
     <div className="credit-card glass-card">
-      <h3 className="section-title"><span className="icon">📈</span>12-Month Credit Forecast</h3>
+      <h3 className="section-title"><span className="icon"><TrendingUp size={18} className='inline-block mr-1' /></span>12-Month Credit Forecast</h3>
 
       <div className="credit-chart-container">
         <ResponsiveContainer width="100%" height={300}>

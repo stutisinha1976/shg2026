@@ -1,23 +1,17 @@
-import { useState, useRef, useEffect } from 'react'
-import Hero from './components/Hero'
-import UploadSection from './components/UploadSection'
-import ResultsDashboard from './components/ResultsDashboard'
-import Chatbot from './components/Chatbot'
+import { useState, useEffect } from 'react'
+import { PanelLeftOpen } from 'lucide-react'
 import Auth from './components/Auth'
 import Sidebar from './components/Sidebar'
+import MainChatView from './components/MainChatView'
 import './App.css'
 
 const API_BASE = 'http://localhost:5000/api'
 
 function App() {
   const [user, setUser] = useState(null)
-  const [results, setResults] = useState(null)
+  const [currentSession, setCurrentSession] = useState({ session_id: null, messages: [] })
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState(null)
-  const [showChat, setShowChat] = useState(false)
-  const [showSidebar, setShowSidebar] = useState(false)
-  const [activeChat, setActiveChat] = useState(null)
-  const resultsRef = useRef(null)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -26,10 +20,8 @@ function App() {
 
     if (token && userData) {
       try {
-        const parsedUser = JSON.parse(userData)
-        setUser(parsedUser)
+        setUser(JSON.parse(userData))
       } catch (err) {
-        console.error('Failed to parse user data:', err)
         localStorage.removeItem('token')
         localStorage.removeItem('user')
       }
@@ -42,32 +34,31 @@ function App() {
       email: authData.email,
       name: JSON.parse(localStorage.getItem('user'))?.name || authData.email.split('@')[0]
     })
-    setError(null)
   }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
-    setResults(null)
-    setShowSidebar(false)
-    setError(null)
+    setCurrentSession({ session_id: null, messages: [] })
   }
 
-  const handleUpload = async (file) => {
+  /* ═══ Chat Interactions ═══ */
+  const handleUploadImage = async (file) => {
     setIsLoading(true)
-    setError(null)
-    setResults(null)
+    
+    const tempMsgs = [...currentSession.messages, { message: `📎 Uploaded image: ${file.name}`, response: null }]
+    setCurrentSession(prev => ({ ...prev, messages: tempMsgs }))
 
     const formData = new FormData()
     formData.append('image', file)
+    if (currentSession.session_id) {
+      formData.append('session_id', currentSession.session_id)
+    }
 
     try {
       const token = localStorage.getItem('token')
-      const headers = {}
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
 
       const response = await fetch(`${API_BASE}/analyze`, {
         method: 'POST',
@@ -76,108 +67,152 @@ function App() {
       })
 
       const data = await response.json()
-
       if (data.success && data.results) {
-        setResults(data.results)
-        setTimeout(() => {
-          resultsRef.current?.scrollIntoView({ behavior: 'smooth' })
-        }, 300)
+        setCurrentSession({
+          session_id: data.session_id || currentSession.session_id,
+          messages: [
+            ...currentSession.messages,
+            {
+               message: `📎 Uploaded image: ${file.name}`,
+               response: `Ledger analysis complete! Found ${data.results.total_members || 0} members and ${data.results.total_transactions || 0} transactions. You can ask me follow-up questions about this active ledger.`,
+               context: data.results 
+            }
+          ]
+        })
       } else {
-        setError(data.error || 'Analysis failed. Please try again.')
+        alert(data.error || "Analysis failed")
       }
     } catch (err) {
-      setError('Failed to connect to the server. Make sure that backend is running.')
+      alert("Failed to connect to backend")
     } finally {
       setIsLoading(false)
     }
   }
 
-  // If not authenticated, show auth screen
+  const handleSendMessage = async (text) => {
+    setIsLoading(true)
+    
+    setCurrentSession(prev => ({ ...prev, messages: [...prev.messages, { message: text, response: null }] }))
+
+    try {
+      const token = localStorage.getItem('token')
+      const headers = { 'Content-Type': 'application/json' }
+      if (token) headers['Authorization'] = `Bearer ${token}`
+      
+      const payload = { message: text, session_id: currentSession.session_id }
+
+      const response = await fetch(`${API_BASE}/chat`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setCurrentSession(prev => {
+          const cleanHistory = prev.messages.filter(m => m.response !== null)
+          return {
+            session_id: data.session_id || prev.session_id,
+            messages: [
+              ...cleanHistory,
+              { message: text, response: data.reply }
+            ]
+          }
+        })
+      } else {
+        alert(data.error || "Chat failed")
+      }
+    } catch (err) {
+      alert("Failed to connect to backend")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSelectSessionFromSidebar = async (session_id) => {
+    if (!session_id) {
+       setCurrentSession({ session_id: null, messages: [] })
+       // On mobile screens, closing the sidebar here might be good, but we match desktop behavior
+       return
+    }
+
+    setIsLoading(true)
+    try {
+      const token = localStorage.getItem('token')
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+
+      const response = await fetch(`${API_BASE}/history/session/${session_id}`, { headers })
+      const data = await response.json()
+      if (data.success) {
+         setCurrentSession({
+            session_id: data.session_id,
+            messages: data.messages
+         })
+      } else {
+         alert("Failed to load session")
+      }
+    } catch (e) {
+      alert("Failed fetching session")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleDeleteSession = async (session_id) => {
+    try {
+      const token = localStorage.getItem('token')
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
+      await fetch(`${API_BASE}/history/session/${session_id}`, {
+        method: 'DELETE',
+        headers
+      })
+      // If the currently active session was deleted, clear the canvas
+      if (currentSession.session_id === session_id) {
+         setCurrentSession({ session_id: null, messages: [] })
+      }
+    } catch (e) {
+      console.error("Failed to delete session", e)
+    }
+  }
+
   if (!user) {
     return <Auth onAuthSuccess={handleAuthSuccess} />
   }
 
   return (
-    <div className="app">
-      {/* Header with profile button */}
-      <header className="app-header">
-        <div className="header-content">
-          <h1 className="app-title">SHG APEX Platform</h1>
-          <button
-            className="profile-button"
-            onClick={() => setShowSidebar(!showSidebar)}
-            title="Profile & History"
-          >
-            <div className="profile-avatar">
-              {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-            </div>
-          </button>
-        </div>
-      </header>
-
-      <Hero />
-      <UploadSection onUpload={handleUpload} isLoading={isLoading} />
-
-      {isLoading && (
-        <div className="loading-overlay">
-          <div className="loading-card glass-card">
-            <div className="loading-spinner" />
-            <h3>APEX v3.1 Analyzing Ledger...</h3>
-            <p className="loading-steps">
-              OCR → Parsing → Scoring → XAI → Fraud → Schemes
-            </p>
-            <p className="loading-sub">This may take 10-15 seconds</p>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="error-card glass-card animate-fade-in-up">
-          <span className="error-icon">⚠️</span>
-          <div>
-            <strong>Analysis Error</strong>
-            <p>{error}</p>
-          </div>
-        </div>
-      )}
-
-      <div ref={resultsRef}>
-        {results && <ResultsDashboard results={results} />}
-      </div>
-
-      {/* Chat FAB */}
-      <button
-        className="chat-fab"
-        onClick={() => {
-          setActiveChat(null) // clear active chat context when fab is clicked
-          setShowChat(!showChat)
-        }}
-        title="Finance Chatbot"
-      >
-        {showChat ? '✕' : '💬'}
-      </button>
-
-      {showChat && (
-        <Chatbot
-          context={results}
-          activeChatData={activeChat}
-          onClose={() => setShowChat(false)}
-          token={localStorage.getItem('token')}
-        />
-      )}
-
-      {/* Sidebar */}
+    <div className="flex w-full h-screen overflow-hidden bg-[#202123] text-gray-100 font-sans">
+      {/* Side Navigation Block */}
       <Sidebar
         user={user}
         onLogout={handleLogout}
-        isOpen={showSidebar}
-        onClose={() => setShowSidebar(false)}
-        onSelectChat={(chat) => {
-          setActiveChat(chat)
-          setShowChat(true)
-          setShowSidebar(false)
-        }}
+        onSelectSession={handleSelectSessionFromSidebar}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        onDeleteSession={handleDeleteSession}
       />
+
+      {/* Main Conversation Canvas */}
+      <main className="flex-1 flex flex-col h-full bg-[#060918] relative">
+        {/* Toggle Sidebar Button when closed */}
+        {!isSidebarOpen && (
+          <div className="absolute top-4 left-4 z-50">
+            <button 
+              onClick={() => setIsSidebarOpen(true)}
+              className="p-2.5 text-slate-400 hover:text-slate-200 hover:bg-[#1a2235] bg-transparent rounded-lg transition-colors border border-transparent shadow-sm"
+              title="Open sidebar"
+            >
+              <PanelLeftOpen size={20} />
+            </button>
+          </div>
+        )}
+        
+        <MainChatView  
+           session={currentSession}
+           isLoading={isLoading}
+           onUploadImage={handleUploadImage}
+           onSendMessage={handleSendMessage}
+        />
+      </main>
     </div>
   )
 }

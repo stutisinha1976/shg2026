@@ -1,3 +1,4 @@
+import { IndianRupee } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import './LoanCalculator.css'
 
@@ -35,7 +36,7 @@ export default function LoanCalculator({ memberAnalysis }) {
 
   return (
     <div className="loan-card glass-card">
-      <h3 className="section-title"><span className="icon">💰</span>Optimal Loan Calculator</h3>
+      <h3 className="section-title"><span className="icon"><IndianRupee size={18} className='inline-block mr-1' /></span>Optimal Loan Calculator</h3>
       <div className="loan-chart-container">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>

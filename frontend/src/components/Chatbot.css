@@ -225,6 +225,96 @@
   cursor: not-allowed;
 }
 
+/* ═══════════════════════════════
+   Voice Assistant Styling
+   ═══════════════════════════════ */
+
+.chatbot-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.auto-speak-toggle {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+  padding: 4px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.auto-speak-toggle.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--accent-primary);
+  color: var(--text-accent);
+}
+
+.mic-button {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+}
+
+.mic-button:hover {
+  background: var(--bg-glass-hover);
+  border-color: var(--text-muted);
+}
+
+.mic-button.listening {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #ef4444;
+  animation: pulseMic 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseMic {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.chat-bubble.has-audio-ctrl {
+  padding-bottom: 24px;
+  position: relative;
+}
+
+.chat-audio-controls {
+  position: absolute;
+  bottom: 4px;
+  right: 8px;
+}
+
+.audio-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity var(--transition-fast);
+  padding: 0;
+}
+
+.audio-btn:hover {
+  opacity: 1;
+}
+
+.stop-audio {
+  color: #ef4444;
+}
+
 @media (max-width: 480px) {
   .chatbot-panel {
     width: calc(100vw - 48px);

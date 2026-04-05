@@ -300,12 +300,17 @@ def analyze():
             
             # Auto-create ChatHistory so the uploaded ledger populates the chat sidebar natively!
             from database import ChatHistory, ChatOperations
+            
+            # The frontend can pass a session_id if they are uploading an image within an existing chat thread
+            session_id = request.form.get("session_id") or str(uuid.uuid4())
+            results["session_id"] = session_id
+
             chat_msg = "Uploaded a ledger for analysis"
             chat_resp = f"Ledger analysis complete! Found {results.get('total_members', 0)} members and {results.get('total_transactions', 0)} transactions. You can ask me follow-up questions about this active ledger."
-            chat_history = ChatHistory(user_id, chat_msg, chat_resp, context=results)
+            chat_history = ChatHistory(user_id, chat_msg, chat_resp, context=results, session_id=session_id)
             ChatOperations.save_chat(chat_history)
 
-        return jsonify({"success": True, "results": results})
+        return jsonify({"success": True, "results": results, "session_id": session_id if 'session_id' in locals() else None})
         
     except Exception as e:
         import traceback
@@ -355,6 +360,7 @@ def chat():
 
     message = data["message"]
     language = data.get("language", "english")
+    session_id = data.get("session_id", None)
     
     # Get user if authenticated
     user_id = None
@@ -363,24 +369,35 @@ def chat():
 
     try:
         from analyzer import chat_finance
+        from database import ChatHistory, ChatOperations
         
-        # Get context from user's recent analysis if available
+        # Get context from backend history if part of a session
         context = None
-        if user_id:
-            from database import AnalysisOperations
-            recent_analyses = AnalysisOperations.get_user_analyses(user_id, limit=1)
-            if recent_analyses:
-                context = recent_analyses[0].results
+        if user_id and session_id:
+            # Fetch the context established by the ledger upload in this specific session
+            history = ChatOperations.get_user_chat_history(user_id, limit=100)
+            for c in reversed(history): # traverse from oldest to newest
+                if getattr(c, 'session_id', None) == session_id and getattr(c, 'context', None):
+                    context = c.context
+                    break
+        if "context" in data and data["context"]:
+            context = data["context"]
+        elif user_id and not session_id:
+             from database import AnalysisOperations
+             recent_analyses = AnalysisOperations.get_user_analyses(user_id, limit=1)
+             if recent_analyses:
+                 context = recent_analyses[0].results
 
         reply = chat_finance(message, context, language)
         
         # Save chat history if user is authenticated
         if user_id:
-            from database import ChatHistory, ChatOperations
-            chat = ChatHistory(user_id, message, reply, language, context=context)
+            if not session_id:
+                session_id = str(uuid.uuid4())
+            chat = ChatHistory(user_id, message, reply, language, context=context, session_id=session_id)
             ChatOperations.save_chat(chat)
 
-        return jsonify({"success": True, "reply": reply})
+        return jsonify({"success": True, "reply": reply, "session_id": session_id})
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -389,18 +406,28 @@ def chat():
 @app.route("/api/history/chat", methods=["GET"])
 @token_required
 def get_chat_history():
-    """Get user's chat history."""
+    """Get user's chat sessions."""
     user = request.current_user
     limit = request.args.get("limit", 50, type=int)
     
     try:
         from database import ChatOperations
-        chats = ChatOperations.get_user_chat_history(user["user_id"], limit)
+        chats = ChatOperations.get_user_chat_history(user["user_id"], limit * 10) # Grab many since we aggregate
+        
+        # Group into sessions identifying the first message representing the whole thread
+        sessions = {}
+        for chat in chats:
+            sid = str(getattr(chat, 'session_id', ''))
+            if not sid:
+                continue
+            if sid not in sessions:
+                sessions[sid] = chat
         
         chat_list = []
-        for chat in chats:
+        for sid, chat in list(sessions.items())[:limit]:
             chat_list.append({
                 "id": str(chat._id) if hasattr(chat, '_id') else None,
+                "session_id": sid,
                 "message": chat.message,
                 "response": chat.response,
                 "language": chat.language,
@@ -414,6 +441,53 @@ def get_chat_history():
         })
         
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/history/session/<session_id>", methods=["GET"])
+@token_required
+def get_chat_session(session_id):
+    """Get all messages for a particular chat session chronologically."""
+    user = request.current_user
+    
+    try:
+        from database import ChatOperations
+        chats = ChatOperations.get_user_chat_history(user["user_id"], limit=200) # Fetch all recent
+        
+        session_msgs = []
+        for chat in reversed(chats): # Return chronological (oldest to newest)
+            if str(getattr(chat, 'session_id', '')) == session_id:
+                session_msgs.append({
+                    "id": str(chat._id) if hasattr(chat, '_id') else None,
+                    "session_id": session_id,
+                    "message": chat.message,
+                    "response": chat.response,
+                    "language": chat.language,
+                    "context": chat.context,
+                    "timestamp": chat.timestamp.isoformat()
+                })
+        
+        return jsonify({
+            "success": True,
+            "session_id": session_id,
+            "messages": session_msgs
+        })
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/history/session/<session_id>", methods=["DELETE"])
+@token_required
+def delete_chat_session(session_id):
+    """Delete a particular chat session."""
+    user = request.current_user
+    print(f"DEBUG: DELETE session {session_id} for user {user['user_id']}")
+    try:
+        from database import ChatOperations
+        ChatOperations.delete_chat_session(user["user_id"], session_id)
+        return jsonify({"success": True})
+    except Exception as e:
+        print(f"DEBUG: DELETE FAILED: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 

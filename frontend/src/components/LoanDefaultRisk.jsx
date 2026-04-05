@@ -1,3 +1,4 @@
+import { Zap } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
 import './LoanDefaultRisk.css'
 
@@ -12,7 +13,7 @@ export default function LoanDefaultRisk({ memberAnalysis }) {
 
   return (
     <div className="risk-card glass-card">
-      <h3 className="section-title"><span className="icon">⚡</span>Loan Default Risk</h3>
+      <h3 className="section-title"><span className="icon"><Zap size={18} className='inline-block mr-1' /></span>Loan Default Risk</h3>
       <div className="risk-members">
         {members.map(([name, data]) => {
           const dr = data.default_risk || {}

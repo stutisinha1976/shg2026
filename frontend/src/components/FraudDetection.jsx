@@ -1,3 +1,4 @@
+import { AlertTriangle } from 'lucide-react'
 import './FraudDetection.css'
 
 export default function FraudDetection({ data }) {
@@ -39,7 +40,7 @@ export default function FraudDetection({ data }) {
       {/* Alerts */}
       {alerts.length > 0 && (
         <div className="fraud-alerts">
-          <h4 className="fraud-alerts-title">⚠️ Alerts ({alerts.length})</h4>
+          <h4 className="fraud-alerts-title"><AlertTriangle size={18} className='inline-block mr-1' /> Alerts ({alerts.length})</h4>
           {alerts.map((alert, i) => (
             <div key={i} className={`fraud-alert-item severity-${alert.severity?.toLowerCase()}`}>
               <span className="alert-severity">{alert.severity}</span>

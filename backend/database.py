@@ -95,12 +95,14 @@ class User:
 class ChatHistory:
     """Chat history model for storing user conversations"""
     
-    def __init__(self, user_id: str, message: str, response: str, language: str = "english", context: Dict = None):
+    def __init__(self, user_id: str, message: str, response: str, language: str = "english", context: Dict = None, session_id: str = None):
         self.user_id = user_id
         self.message = message
         self.response = response
         self.language = language
         self.context = context
+        import uuid
+        self.session_id = session_id if session_id else str(uuid.uuid4())
         self.timestamp = datetime.now(timezone.utc)
     
     def to_dict(self) -> Dict:
@@ -111,6 +113,7 @@ class ChatHistory:
             "response": self.response,
             "language": self.language,
             "context": self.context,
+            "session_id": self.session_id,
             "timestamp": self.timestamp
         }
     
@@ -122,7 +125,8 @@ class ChatHistory:
             data["message"],
             data["response"],
             data.get("language", "english"),
-            data.get("context", None)
+            data.get("context", None),
+            data.get("session_id", None)
         )
         chat.timestamp = data["timestamp"]
         chat._id = data["_id"]  # Store ObjectId
@@ -226,6 +230,12 @@ class ChatOperations:
         """Delete user's chat history"""
         collection = get_chat_history_collection()
         collection.delete_many({"user_id": user_id})
+        
+    @staticmethod
+    def delete_chat_session(user_id: str, session_id: str):
+        """Delete specific chat session for a user"""
+        collection = get_chat_history_collection()
+        collection.delete_many({"user_id": user_id, "session_id": session_id})
 
 class AnalysisOperations:
     """Database operations for analysis results"""
