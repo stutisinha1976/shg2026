@@ -3,6 +3,7 @@ import { PanelLeftOpen } from 'lucide-react'
 import Auth from './components/Auth'
 import Sidebar from './components/Sidebar'
 import MainChatView from './components/MainChatView'
+import { TranslationProvider } from './contexts/TranslationContext'
 import './App.css'
 
 const API_BASE = 'http://localhost:5000/api'
@@ -12,6 +13,7 @@ function App() {
   const [currentSession, setCurrentSession] = useState({ session_id: null, messages: [] })
   const [isLoading, setIsLoading] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [selectedLanguage, setSelectedLanguage] = useState('en')
 
   // Check for existing authentication on mount
   useEffect(() => {
@@ -66,6 +68,12 @@ function App() {
         body: formData,
       })
 
+      if (response.status === 401) {
+        handleLogout()
+        alert('Session expired. Please log in again.')
+        return
+      }
+
       const data = await response.json()
       if (data.success && data.results) {
         setCurrentSession({
@@ -99,13 +107,19 @@ function App() {
       const headers = { 'Content-Type': 'application/json' }
       if (token) headers['Authorization'] = `Bearer ${token}`
       
-      const payload = { message: text, session_id: currentSession.session_id }
+      const payload = { message: text, session_id: currentSession.session_id, language: selectedLanguage }
 
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
       })
+
+      if (response.status === 401) {
+        handleLogout()
+        alert('Session expired. Please log in again.')
+        return
+      }
 
       const data = await response.json()
       if (data.success) {
@@ -142,6 +156,13 @@ function App() {
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
 
       const response = await fetch(`${API_BASE}/history/session/${session_id}`, { headers })
+      
+      if (response.status === 401) {
+        handleLogout()
+        alert('Session expired. Please log in again.')
+        return
+      }
+
       const data = await response.json()
       if (data.success) {
          setCurrentSession({
@@ -162,10 +183,16 @@ function App() {
     try {
       const token = localStorage.getItem('token')
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {}
-      await fetch(`${API_BASE}/history/session/${session_id}`, {
+      const response = await fetch(`${API_BASE}/history/session/${session_id}`, {
         method: 'DELETE',
         headers
       })
+      
+      if (response.status === 401) {
+        handleLogout()
+        alert('Session expired. Please log in again.')
+        return
+      }
       // If the currently active session was deleted, clear the canvas
       if (currentSession.session_id === session_id) {
          setCurrentSession({ session_id: null, messages: [] })
@@ -180,7 +207,8 @@ function App() {
   }
 
   return (
-    <div className="flex w-full h-screen overflow-hidden bg-[#202123] text-gray-100 font-sans">
+    <TranslationProvider targetLanguage={selectedLanguage}>
+      <div className="flex w-full h-screen overflow-hidden bg-[#202123] text-gray-100 font-sans">
       {/* Side Navigation Block */}
       <Sidebar
         user={user}
@@ -189,6 +217,8 @@ function App() {
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         onDeleteSession={handleDeleteSession}
+        selectedLanguage={selectedLanguage}
+        onLanguageChange={setSelectedLanguage}
       />
 
       {/* Main Conversation Canvas */}
@@ -211,9 +241,11 @@ function App() {
            isLoading={isLoading}
            onUploadImage={handleUploadImage}
            onSendMessage={handleSendMessage}
+           selectedLanguage={selectedLanguage}
         />
       </main>
     </div>
+    </TranslationProvider>
   )
 }
 

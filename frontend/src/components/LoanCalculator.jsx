@@ -1,10 +1,12 @@
 import { IndianRupee } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { useTranslation } from '../contexts/TranslationContext'
 import './LoanCalculator.css'
 
 const COLORS = ['#6366f1', '#06b6d4', '#a855f7', '#f59e0b', '#22c55e', '#ec4899']
 
 export default function LoanCalculator({ memberAnalysis }) {
+  const { t } = useTranslation();
   if (!memberAnalysis || Object.keys(memberAnalysis).length === 0) return null
   const members = Object.entries(memberAnalysis)
 
@@ -26,17 +28,17 @@ export default function LoanCalculator({ memberAnalysis }) {
     return (
       <div className="loan-tooltip">
         <p className="loan-tooltip-name">{d.fullName}</p>
-        <p className="loan-tooltip-row"><span>Optimal Loan</span><strong>₹{d.loan.toLocaleString()}</strong></p>
-        <p className="loan-tooltip-row"><span>EMI (12m)</span><strong>₹{d.emi12.toLocaleString()}/mo</strong></p>
-        <p className="loan-tooltip-row"><span>EMI (24m)</span><strong>₹{d.emi24.toLocaleString()}/mo</strong></p>
-        <p className="loan-tooltip-row"><span>Recommended</span><strong>{d.tenure}</strong></p>
+        <p className="loan-tooltip-row"><span>{t("Optimal Loan")}</span><strong>₹{d.loan.toLocaleString()}</strong></p>
+        <p className="loan-tooltip-row"><span>{t("EMI (12m)")}</span><strong>₹{d.emi12.toLocaleString()}/mo</strong></p>
+        <p className="loan-tooltip-row"><span>{t("EMI (24m)")}</span><strong>₹{d.emi24.toLocaleString()}/mo</strong></p>
+        <p className="loan-tooltip-row"><span>{t("Recommended")}</span><strong>{t(d.tenure)}</strong></p>
       </div>
     )
   }
 
   return (
     <div className="loan-card glass-card">
-      <h3 className="section-title"><span className="icon"><IndianRupee size={18} className='inline-block mr-1' /></span>Optimal Loan Calculator</h3>
+      <h3 className="section-title"><span className="icon"><IndianRupee size={18} className='inline-block mr-1' /></span>{t("Optimal Loan Calculator")}</h3>
       <div className="loan-chart-container">
         <ResponsiveContainer width="100%" height={260}>
           <BarChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
@@ -63,17 +65,17 @@ export default function LoanCalculator({ memberAnalysis }) {
                 <span className="loan-detail-name">{name}</span>
                 <span className={`badge badge-${le.eligibility_category === 'High' ? 'green' :
                   le.eligibility_category === 'Good' ? 'green' : le.eligibility_category === 'Medium' ? 'orange' : 'red'}`}>
-                  {le.eligibility_category}
+                  {t(le.eligibility_category)}
                 </span>
               </div>
               <div className="loan-detail-grid">
-                <div><span className="loan-detail-label">Optimal Loan</span>
+                <div><span className="loan-detail-label">{t("Optimal Loan")}</span>
                   <span className="loan-detail-value">₹{(ol.optimal_loan_amount || 0).toLocaleString()}</span></div>
-                <div><span className="loan-detail-label">EMI (12m)</span>
+                <div><span className="loan-detail-label">{t("EMI (12m)")}</span>
                   <span className="loan-detail-value">₹{(ol.emi_12_months || 0).toLocaleString()}</span></div>
-                <div><span className="loan-detail-label">EMI (24m)</span>
+                <div><span className="loan-detail-label">{t("EMI (24m)")}</span>
                   <span className="loan-detail-value">₹{(ol.emi_24_months || 0).toLocaleString()}</span></div>
-                <div><span className="loan-detail-label">Interest Rate</span>
+                <div><span className="loan-detail-label">{t("Interest Rate")}</span>
                   <span className="loan-detail-value">{le.estimated_interest_rate}%</span></div>
               </div>
             </div>

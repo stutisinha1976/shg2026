@@ -5,12 +5,12 @@ const SCORE_COLORS = {
   green: '#22c55e', orange: '#f59e0b', red: '#ef4444', blue: '#6366f1', cyan: '#06b6d4',
 }
 
-function ScoreBar({ label, value, max = 100, color }) {
+function ScoreBar({ label, value, max = 100, color, t }) {
   const pct = Math.min((value / max) * 100, 100)
   return (
     <div className="score-bar">
       <div className="score-bar-header">
-        <span className="score-bar-label">{label}</span>
+        <span className="score-bar-label">{t ? t(label) : label}</span>
         <span className="score-bar-value" style={{ color }}>{typeof value === 'number' ? value.toFixed(1) : value}/{max}</span>
       </div>
       <div className="score-bar-track">
@@ -26,7 +26,7 @@ export default function MemberDetails({ memberAnalysis }) {
 
   return (
     <div className="members-card glass-card">
-      <h3 className="section-title"><span className="icon"><Brain size={18} className='inline-block mr-1' /></span>AI Explainability (XAI) & Member Scores</h3>
+      <h3 className="section-title"><span className="icon"><Brain size={18} className='inline-block mr-1' /></span>Member Scores</h3>
       <div className="members-grid">
         {members.map(([name, data]) => {
           const xai = data.xai_report || {}

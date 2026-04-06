@@ -3,6 +3,7 @@ import { Square, Play, Mic, Octagon, VolumeX, Volume2, Bot, Send, Paperclip, Glo
 import ResultsDashboard from './ResultsDashboard'
 import { NGramEngine } from '../utils/ngram'
 import ShapeGrid from './ShapeGrid'
+import { useTranslation } from '../contexts/TranslationContext'
 
 const LANGUAGES = [
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -13,31 +14,21 @@ const LANGUAGES = [
   { code: 'ta', name: 'Tamil', flag: '🇮🇳' }
 ]
 
-export default function MainChatView({ session, onUploadImage, onSendMessage, isLoading }) {
+export default function MainChatView({ session, onUploadImage, onSendMessage, isLoading, selectedLanguage = 'en' }) {
   const [input, setInput] = useState('')
   const [suggestion, setSuggestion] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [autoSpeak, setAutoSpeak] = useState(false)
   const [speakingIndex, setSpeakingIndex] = useState(null)
-  const [selectedLanguage, setSelectedLanguage] = useState('en')
-  const [showLanguageMenu, setShowLanguageMenu] = useState(false)
-  const [translations, setTranslations] = useState({})
+  
+  const { t } = useTranslation()
 
   const messagesEndRef = useRef(null)
   const fileInputRef = useRef(null)
   const recognitionRef = useRef(null)
   const languageMenuRef = useRef(null)
 
-  // Close language menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target)) {
-        setShowLanguageMenu(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+
 
   // Initialize N-Gram Engine
   const ngramModel = useMemo(() => {
@@ -155,6 +146,7 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
     if (!('speechSynthesis' in window)) return
     window.speechSynthesis.cancel()
     const utterance = new SpeechSynthesisUtterance(text)
+    utterance.lang = selectedLanguage === 'en' ? 'en-US' : `${selectedLanguage}-IN`
     utterance.onend = () => setSpeakingIndex(null)
     setSpeakingIndex(index)
     window.speechSynthesis.speak(utterance)
@@ -165,41 +157,6 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
     setSpeakingIndex(null)
   }
 
-  // Google Translate function
-  const translateText = async (text, targetLang) => {
-    if (targetLang === 'en' || !text) return text
-
-    try {
-      const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
-      )
-      const data = await response.json()
-      return data[0][0][0]
-    } catch (error) {
-      console.error('Translation error:', error)
-      return text
-    }
-  }
-
-  const handleLanguageChange = async (langCode) => {
-    setSelectedLanguage(langCode)
-    setShowLanguageMenu(false)
-
-    // Translate all existing messages
-    const newTranslations = {}
-    for (const msg of displayMessages) {
-      if (msg.content) {
-        newTranslations[msg.id] = await translateText(msg.content, langCode)
-      }
-    }
-    setTranslations(newTranslations)
-  }
-
-  const getMessageContent = (msg) => {
-    if (selectedLanguage === 'en') return msg.content
-    return translations[msg.id] || msg.content
-  }
-
   // Pre-process messages from session into a renderable UI stream. 
   const displayMessages = []
   const isEmptyState = !session || !session.messages || session.messages.length === 0
@@ -207,6 +164,7 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
   if (!isEmptyState) {
     session.messages.forEach((msg, idx) => {
       displayMessages.push({ role: 'user', content: msg.message, id: `u-${idx}` })
+
 
       const isLedgerAnalysis = msg.response && msg.response.includes("Ledger analysis complete")
 
@@ -241,11 +199,11 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
             <span className="text-gray-600">{suggestion}</span>
           </div>
 
-          {/* Actual Input */}
+            {/* Actual Input */}
           <input
             type="text"
             className="w-full h-full bg-transparent border-none outline-none text-white placeholder-gray-600 text-base font-light px-4 relative z-10 font-georgia"
-            placeholder={isListening ? "Listening..." : "Ask anything about SHG finance..."}
+            placeholder={isListening ? t("Listening...") : t("Ask anything about SHG finance...")}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -268,11 +226,11 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
         <div className="text-center text-xs text-gray-600 flex items-center justify-center gap-8 px-4 font-normal">
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 bg-gray-500 rounded-full animate-pulse"></div>
-            <span>Press Tab to accept predictive text</span>
+            <span>{t("Press Tab to accept predictive text")}</span>
           </div>
           <button onClick={() => setAutoSpeak(!autoSpeak)} className={`flex items-center gap-2 hover:text-white transition-all duration-300 px-4 py-2 rounded-xl font-normal ${autoSpeak ? 'text-white bg-gray-800' : ''}`}>
             {autoSpeak ? <Volume2 size={14} /> : <VolumeX size={14} />}
-            {autoSpeak ? "Auto-Speak On" : "Auto-Speak Off"}
+            {autoSpeak ? t("Auto-Speak On") : t("Auto-Speak Off")}
           </button>
         </div>
       )}
@@ -295,41 +253,13 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
           />
         </div>
         <div className="max-w-4xl mx-auto w-full relative z-10">
-          {/* Language Selector */}
-          <div className="absolute top-0 right-0 z-20" ref={languageMenuRef}>
-            <div className="relative">
-              <button
-                onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-300"
-              >
-                <Globe size={16} />
-                <span>{LANGUAGES.find(l => l.code === selectedLanguage)?.flag}</span>
-                <span className="text-sm">{LANGUAGES.find(l => l.code === selectedLanguage)?.name}</span>
-              </button>
-
-              {showLanguageMenu && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl overflow-hidden">
-                  {LANGUAGES.map((lang) => (
-                    <button
-                      key={lang.code}
-                      onClick={() => handleLanguageChange(lang.code)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800 transition-all duration-300 ${selectedLanguage === lang.code ? 'bg-gray-800 text-white' : 'text-gray-400'}`}
-                    >
-                      <span>{lang.flag}</span>
-                      <span className="text-sm">{lang.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
 
           <div className="text-center mb-20">
             <h1 className="text-6xl md:text-7xl font-normal text-white mb-6 tracking-wide">
-              SHG Finance Assistant
+              {t("SHG Finance Assistant")}
             </h1>
             <p className="text-lg text-gray-400 mb-16 max-w-2xl mx-auto leading-relaxed font-normal">
-              Upload ledger images or ask questions about Self Help Group finance, micro-loans, and credit management.
+              {t("Upload ledger images or ask questions about Self Help Group finance, micro-loans, and credit management.")}
             </p>
           </div>
           <div className="w-full max-w-2xl mx-auto mb-20">
@@ -355,34 +285,7 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
         />
       </div>
 
-      {/* Header with Language Selector */}
-      <div className="relative z-20 flex justify-end px-10 py-4" ref={languageMenuRef}>
-        <div className="relative">
-          <button
-            onClick={() => setShowLanguageMenu(!showLanguageMenu)}
-            className="flex items-center gap-2 px-4 py-2 bg-gray-900 border border-gray-800 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-all duration-300"
-          >
-            <Globe size={16} />
-            <span>{LANGUAGES.find(l => l.code === selectedLanguage)?.flag}</span>
-            <span className="text-sm">{LANGUAGES.find(l => l.code === selectedLanguage)?.name}</span>
-          </button>
 
-          {showLanguageMenu && (
-            <div className="absolute top-full right-0 mt-2 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl overflow-hidden">
-              {LANGUAGES.map((lang) => (
-                <button
-                  key={lang.code}
-                  onClick={() => handleLanguageChange(lang.code)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800 transition-all duration-300 ${selectedLanguage === lang.code ? 'bg-gray-800 text-white' : 'text-gray-400'}`}
-                >
-                  <span>{lang.flag}</span>
-                  <span className="text-sm">{lang.name}</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
 
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto px-10 py-10 space-y-6 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent relative z-10">
@@ -407,7 +310,7 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
                   ${msg.role === 'user'
                     ? 'bg-gray-800 text-white border border-gray-700'
                     : 'bg-gray-900/60 text-gray-100 border border-gray-800'}`}>
-                  {getMessageContent(msg).split('\n').map((line, j) => (
+                  {t(msg.content).split('\n').map((line, j) => (
                     <p key={j} className="min-h-[1rem] last:mb-0 font-normal leading-6">{line || '\u00A0'}</p>
                   ))}
 
@@ -419,7 +322,7 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
                           <Square size={12} />
                         </button>
                       ) : (
-                        <button onClick={() => speakText(getMessageContent(msg), i)} className="p-1.5 text-gray-500 hover:text-white hover:bg-gray-800 rounded-md transition-all duration-300" title="Read Aloud">
+                        <button onClick={() => speakText(t(msg.content), i)} className="p-1.5 text-gray-500 hover:text-white hover:bg-gray-800 rounded-md transition-all duration-300" title="Read Aloud">
                           <Play size={12} />
                         </button>
                       )}
@@ -451,8 +354,8 @@ export default function MainChatView({ session, onUploadImage, onSendMessage, is
                   <div className="w-1.5 h-1.5 rounded-full bg-gray-600 animate-bounce" style={{ animationDelay: '0.15s' }} />
                   <div className="w-1.5 h-1.5 rounded-full bg-gray-700 animate-bounce" style={{ animationDelay: '0.3s' }} />
                 </div>
-                {session?.messages?.length > 0 && session.messages[session.messages.length - 1].message.includes("📎 Uploaded image") && (
-                  <span className="text-xs font-normal text-gray-400 animate-pulse">Running advanced ledger extraction...</span>
+                {session?.messages?.length > 0 && session.messages[session.messages.length - 1].message.includes("📎") && (
+                  <span className="text-xs font-normal text-gray-400 animate-pulse">{t("Running advanced ledger extraction...")}</span>
                 )}
               </div>
             </div>

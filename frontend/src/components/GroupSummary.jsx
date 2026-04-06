@@ -1,7 +1,9 @@
 import { Search, BarChart2, IndianRupee, Users, ClipboardList, Star, ShieldAlert, Globe } from 'lucide-react'
+import { useTranslation } from '../contexts/TranslationContext'
 import './GroupSummary.css'
 
 export default function GroupSummary({ results }) {
+  const { t } = useTranslation();
   if (!results) return null
 
   const stats = [
@@ -21,7 +23,7 @@ export default function GroupSummary({ results }) {
         <div className="summary-stat glass-card" key={i}>
           <div className="summary-stat-icon">{stat.icon}</div>
           <div className="summary-stat-value" style={{ color: stat.color }}>{stat.value}</div>
-          <div className="summary-stat-label">{stat.label}</div>
+          <div className="summary-stat-label">{t(stat.label)}</div>
         </div>
       ))}
       {results.detected_language && (

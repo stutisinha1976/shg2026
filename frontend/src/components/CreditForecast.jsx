@@ -3,24 +3,27 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, Area, AreaChart
 } from 'recharts'
+import { useTranslation } from '../contexts/TranslationContext'
 import './CreditForecast.css'
 
 const COLORS = ['#6366f1', '#06b6d4', '#a855f7', '#f59e0b', '#22c55e', '#ec4899', '#f97316']
 
 export default function CreditForecast({ memberAnalysis }) {
+  const { t } = useTranslation();
   if (!memberAnalysis || Object.keys(memberAnalysis).length === 0) return null
 
   const members = Object.entries(memberAnalysis)
 
-  const chartData = ['Current', '3 Months', '6 Months', '12 Months'].map((period) => {
+  const chartData = [t('Current'), t('3 Months'), t('6 Months'), t('12 Months')].map((period, idx) => {
+    const rawPeriod = ['Current', '3 Months', '6 Months', '12 Months'][idx];
     const point = { period }
     members.forEach(([name, data]) => {
       const ct = data.credit_trajectory || {}
-      const t = ct.trajectory || {}
-      if (period === 'Current') point[name] = ct.current_score
-      else if (period === '3 Months') point[name] = t['3m']
-      else if (period === '6 Months') point[name] = t['6m']
-      else if (period === '12 Months') point[name] = t['12m']
+      const tr = ct.trajectory || {}
+      if (rawPeriod === 'Current') point[name] = ct.current_score
+      else if (rawPeriod === '3 Months') point[name] = tr['3m']
+      else if (rawPeriod === '6 Months') point[name] = tr['6m']
+      else if (rawPeriod === '12 Months') point[name] = tr['12m']
     })
     return point
   })
@@ -29,7 +32,7 @@ export default function CreditForecast({ memberAnalysis }) {
     if (!active || !payload) return null
     return (
       <div className="credit-tooltip">
-        <p className="credit-tooltip-label">{label}</p>
+        <p className="credit-tooltip-label">{t(label)}</p>
         {payload.map((entry, i) => (
           <div key={i} className="credit-tooltip-row">
             <span className="credit-tooltip-dot" style={{ background: entry.color }} />
@@ -43,7 +46,7 @@ export default function CreditForecast({ memberAnalysis }) {
 
   return (
     <div className="credit-card glass-card">
-      <h3 className="section-title"><span className="icon"><TrendingUp size={18} className='inline-block mr-1' /></span>12-Month Credit Forecast</h3>
+      <h3 className="section-title"><span className="icon"><TrendingUp size={18} className='inline-block mr-1' /></span>{t("12-Month Credit Forecast")}</h3>
 
       <div className="credit-chart-container">
         <ResponsiveContainer width="100%" height={300}>
@@ -79,13 +82,13 @@ export default function CreditForecast({ memberAnalysis }) {
         <table className="credit-table">
           <thead>
             <tr>
-              <th>Member</th>
-              <th>Current</th>
-              <th>3m</th>
-              <th>6m</th>
-              <th>12m</th>
-              <th>Δ/Month</th>
-              <th>Months to 750</th>
+              <th>{t("Member")}</th>
+              <th>{t("Current")}</th>
+              <th>{t("3m")}</th>
+              <th>{t("6m")}</th>
+              <th>{t("12m")}</th>
+              <th>{t("Δ/Month")}</th>
+              <th>{t("Months to 750")}</th>
             </tr>
           </thead>
           <tbody>

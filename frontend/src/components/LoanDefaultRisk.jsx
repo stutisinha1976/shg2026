@@ -1,5 +1,6 @@
 import { Zap } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { useTranslation } from '../contexts/TranslationContext'
 import './LoanDefaultRisk.css'
 
 const COLOR_MAP = {
@@ -8,18 +9,19 @@ const COLOR_MAP = {
 }
 
 export default function LoanDefaultRisk({ memberAnalysis }) {
+  const { t } = useTranslation();
   if (!memberAnalysis || Object.keys(memberAnalysis).length === 0) return null
   const members = Object.entries(memberAnalysis)
 
   return (
     <div className="risk-card glass-card">
-      <h3 className="section-title"><span className="icon"><Zap size={18} className='inline-block mr-1' /></span>Loan Default Risk</h3>
+      <h3 className="section-title"><span className="icon"><Zap size={18} className='inline-block mr-1' /></span>{t("Loan Default Risk")}</h3>
       <div className="risk-members">
         {members.map(([name, data]) => {
           const dr = data.default_risk || {}
           const prob = typeof dr.default_probability === 'number' ? dr.default_probability : parseFloat(String(dr.default_probability || '0'))
           const color = COLOR_MAP[dr.color] || COLOR_MAP[dr.risk_level] || '#64748b'
-          const gaugeData = [{ name: 'Risk', value: prob }, { name: 'Safe', value: 100 - prob }]
+          const gaugeData = [{ name: t('Risk'), value: prob }, { name: t('Safe'), value: 100 - prob }]
 
           return (
             <div key={name} className="risk-member">
@@ -40,9 +42,9 @@ export default function LoanDefaultRisk({ memberAnalysis }) {
               <div className="risk-member-info">
                 <h4 className="risk-member-name">{name}</h4>
                 <span className={`badge badge-${color === '#22c55e' ? 'green' : color === '#f59e0b' ? 'orange' : 'red'}`}>
-                  {dr.risk_level || 'N/A'}
+                  {t(dr.risk_level || 'N/A')}
                 </span>
-                <p className="risk-recommendation">{dr.recommendation}</p>
+                <p className="risk-recommendation">{t(dr.recommendation)}</p>
               </div>
             </div>
           )

@@ -6,11 +6,13 @@ import LoanDefaultRisk from './LoanDefaultRisk'
 import LoanCalculator from './LoanCalculator'
 import MemberDetails from './MemberDetails'
 import GovernmentSchemes from './GovernmentSchemes'
+import { useTranslation } from '../contexts/TranslationContext'
 import './ResultsDashboard.css'
 
 const API_BASE = 'http://localhost:5000/api'
 
 export default function ResultsDashboard({ results }) {
+  const { t } = useTranslation();
   if (!results) return null
 
   const memberAnalysis = results.member_analysis || {}
@@ -40,10 +42,10 @@ export default function ResultsDashboard({ results }) {
       <div className="dashboard-header">
         <h2 className="dashboard-title">
           <span className="icon"><BarChart2 size={18} className='inline-block mr-1' /></span>
-          SHG APEX v3.1 Analysis Results
+          {t("SHG APEX v3.1 Analysis Results")}
         </h2>
         <button className="pdf-btn" onClick={handleDownloadPDF}>
-          <span><Download size={18} className='inline-block mr-1' /></span> Download PDF Report
+          <span><Download size={18} className='inline-block mr-1' /></span> {t("Download PDF Report")}
         </button>
       </div>
 
